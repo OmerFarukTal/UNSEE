@@ -52,6 +52,7 @@ from transformers.file_utils import (
 #from simcse.models import RobertaForCL, BertForCL, BertForCorInfoMax, RobertaForCorInfoMax,BertForVICReg, RobertaForVICReg,BertForBarlow,RobertaForBarlow,DistilBertForBarlow
 from simcse.model.bert_roberta_models import RobertaForCL, BertForCL, BertForCorInfoMax, RobertaForCorInfoMax,BertForVICReg, RobertaForVICReg,BertForBarlow,RobertaForBarlow
 from simcse.model.distilbert_model import DistilBertForCL,DistilBertForCorInfoMax,DistilBertForVICReg,DistilBertForBarlow
+from simcse.model.deberta_model import DebertaForCL, DebertaForCorInfoMax, DebertaForVICReg, DebertaForBarlow
 from simcse.trainers import CLTrainer
 
 logger = logging.getLogger(__name__)
@@ -663,6 +664,38 @@ def main():
                 use_auth_token=True if model_args.use_auth_token else None,
                 model_args=model_args,
             )
+        elif "deberta" in model_args.model_name_or_path:
+            if model_args.ssl_type == "simcse":
+                model_class = DebertaForCL
+            elif model_args.ssl_type == "corinfomax":
+                model_class = DebertaForCorInfoMax
+            
+            elif model_args.ssl_type == "vicreg":
+                model_class = DebertaForVICReg
+            elif model_args.ssl_type == "barlow":
+                model_class = DebertaForBarlow
+            else:
+                raise ValueError("Unknown ssl_type")
+            print(config)
+            model = model_class.from_pretrained(
+                model_args.model_name_or_path,
+                training_args,
+                from_tf=bool(".ckpt" in model_args.model_name_or_path),
+                config=config,
+                cache_dir=model_args.cache_dir,
+                revision=model_args.model_revision,
+                use_auth_token=True if model_args.use_auth_token else None,
+                model_args=model_args,
+            )
+            if model_args.do_mlm:
+                pretrained_model = DebertaPreTrainedModel.from_pretrained(
+                    model_args.model_name_or_path
+                )
+                model.lm_head.load_state_dict(
+                    pretrained_model.cls.predictions.state_dict()
+                )
+        
+        
         elif "distilbert" in model_args.model_name_or_path:
             if model_args.ssl_type == "simcse":
                 model_class = DistilBertForCL
