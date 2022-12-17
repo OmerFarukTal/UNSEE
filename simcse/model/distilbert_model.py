@@ -41,8 +41,7 @@ class DistilBertForCL(DistilBertPreTrainedModel):
 
         if self.model_args.do_mlm:
             self.lm_head = DistilBertForMaskedLM(config)
-        sizes = [2048] + list(map(int, training_args.proj_output_dim.split('-')))
-        self.bn = nn.BatchNorm1d(sizes[-1], affine=False)
+
 
         cl_init(self,config,self.training_args)
         
@@ -102,10 +101,9 @@ class DistilBertForCorInfoMax(DistilBertPreTrainedModel):
 
         if self.model_args.do_mlm:
             self.lm_head = DistilBertForMaskedLM(config)
-        sizes = [2048] + list(map(int, training_args.proj_output_dim.split('-')))
-        self.bn = nn.BatchNorm1d(sizes[-1], affine=False)
 
-        barlow_init(self,config,self.training_args)
+
+        corinfomax_init(self,config,self.training_args)
         
 
     def forward(
@@ -227,10 +225,9 @@ class DistilBertForVICReg(DistilBertPreTrainedModel):
 
         if self.model_args.do_mlm:
             self.lm_head = DistilBertForMaskedLM(config)
-        sizes = [2048] + list(map(int, training_args.proj_output_dim.split('-')))
-        self.bn = nn.BatchNorm1d(sizes[-1], affine=False)
 
-        barlow_init(self,config,self.training_args)
+
+        vicreg_init(self,config,self.training_args)
         
 
     def forward(

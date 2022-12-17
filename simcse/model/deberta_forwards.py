@@ -59,15 +59,15 @@ def cl_forward(
     # Get raw embeddings
     outputs = encoder(    #### UPDATE HERE ####
         input_ids,
-        attention_mask=attention_mask,
         token_type_ids=token_type_ids,
+        attention_mask=attention_mask,
         position_ids=position_ids,
         inputs_embeds=inputs_embeds,
         output_attentions=output_attentions,
-        output_hidden_states=True
+        output_hidden_states= True
         if cls.model_args.pooler_type in ["avg_top2", "avg_first_last"]
         else False,
-        return_dict=True,
+        return_dict=return_dict,
     )
 
     # MLM auxiliary objective

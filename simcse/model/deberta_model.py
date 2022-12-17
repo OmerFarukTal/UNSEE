@@ -41,8 +41,7 @@ class DebertaForCL(DebertaV2PreTrainedModel):
 
         if self.model_args.do_mlm:
             self.lm_head = DebertaV2ForMaskedLM(config)
-        sizes = [2048] + list(map(int, training_args.proj_output_dim.split('-')))
-        self.bn = nn.BatchNorm1d(sizes[-1], affine=False)
+
 
         cl_init(self,config,self.training_args)
         
@@ -51,7 +50,8 @@ class DebertaForCL(DebertaV2PreTrainedModel):
         self,
         input_ids=None,
         attention_mask=None,
-        head_mask=None,
+        token_type_ids=None,
+        position_ids=None,
         inputs_embeds=None,
         labels=None,
         output_attentions=None,
@@ -65,16 +65,15 @@ class DebertaForCL(DebertaV2PreTrainedModel):
             return normalized_sentemb_forward(
                 self,
                 self.deberta,
-                input_ids=input_ids,
-                attention_mask=attention_mask,
-                token_type_ids = token_type_ids,
-                position_ids = position_ids,
-                inputs_embeds = inputs_embeds,
-                output_attentions=output_attentions,
-                output_hidden_states=output_hidden_states,
-                return_dict=return_dict,
-                
-            )
+                input_ids=None,
+                attention_mask=None,
+                token_type_ids=None,
+                position_ids=None,
+                inputs_embeds=None,
+                output_attentions=None,
+                output_hidden_states=None,
+                return_dict=None,
+        )
         else:
             return cl_forward(
                 self,
@@ -90,6 +89,19 @@ class DebertaForCL(DebertaV2PreTrainedModel):
                 mlm_input_ids=mlm_input_ids,
                 mlm_labels=mlm_labels
             )
+            return cl_forward(
+                cls,
+                self.deberta,
+                input_ids=input_ids,
+                attention_mask=intput_ids,
+                token_type_ids=intput_ids,
+                position_ids=input_ids,
+                inputs_embeds=inputs_embeds,
+                output_attentions=output_attentions,
+                output_hidden_states=output_hidden_states,
+                return_dict=return_dict,
+                mlm_input_ids=mlm_input_ids,
+                mlm_labels=mlm_labels)
 
 class DebertaForCorInfoMax(DebertaV2PreTrainedModel):
     _keys_to_ignore_on_load_missing = [r"position_ids"]
@@ -104,17 +116,16 @@ class DebertaForCorInfoMax(DebertaV2PreTrainedModel):
 
         if self.model_args.do_mlm:
             self.lm_head = DebertaV2ForMaskedLM(config)
-        sizes = [2048] + list(map(int, training_args.proj_output_dim.split('-')))
-        self.bn = nn.BatchNorm1d(sizes[-1], affine=False)
 
-        barlow_init(self,config,self.training_args)
+
+        corinfomax_init(self,config,self.training_args)
         
-
     def forward(
         self,
         input_ids=None,
         attention_mask=None,
-        head_mask=None,
+        token_type_ids=None,
+        position_ids=None,
         inputs_embeds=None,
         labels=None,
         output_attentions=None,
@@ -124,20 +135,20 @@ class DebertaForCorInfoMax(DebertaV2PreTrainedModel):
         mlm_input_ids=None,
         mlm_labels=None,
     ):
-        if sent_emb:
+        if sent_emb:            
             return normalized_sentemb_forward(
                 self,
                 self.deberta,
-                input_ids=input_ids,
-                attention_mask=attention_mask,
-                token_type_ids = token_type_ids,
-                position_ids = position_ids,
-                inputs_embeds = inputs_embeds,
-                output_attentions=output_attentions,
-                output_hidden_states=output_hidden_states,
-                return_dict=return_dict,
-                
-            )
+                input_ids=None,
+                attention_mask=None,
+                token_type_ids=None,
+                position_ids=None,
+                inputs_embeds=None,
+                output_attentions=None,
+                output_hidden_states=None,
+                return_dict=None,
+        )
+
         else:
             return corinfomax_forward(
                 self,
@@ -178,7 +189,8 @@ class DebertaForBarlow(DebertaV2PreTrainedModel):
         self,
         input_ids=None,
         attention_mask=None,
-        head_mask=None,
+        token_type_ids=None,
+        position_ids=None,
         inputs_embeds=None,
         labels=None,
         output_attentions=None,
@@ -192,15 +204,15 @@ class DebertaForBarlow(DebertaV2PreTrainedModel):
             return normalized_sentemb_forward(
                 self,
                 self.deberta,
-                input_ids=input_ids,
-                attention_mask=attention_mask,
-                token_type_ids = token_type_ids,
-                position_ids = position_ids,
-                inputs_embeds = inputs_embeds,
-                output_attentions=output_attentions,
-                output_hidden_states=output_hidden_states,
-                return_dict=return_dict,
-            )
+                input_ids=None,
+                attention_mask=None,
+                token_type_ids=None,
+                position_ids=None,
+                inputs_embeds=None,
+                output_attentions=None,
+                output_hidden_states=None,
+                return_dict=None,
+        )
         else:
             return barlow_forward(
                 self,
@@ -230,17 +242,16 @@ class DebertaForVICReg(DebertaV2PreTrainedModel):
 
         if self.model_args.do_mlm:
             self.lm_head = DebertaV2ForMaskedLM(config)
-        sizes = [2048] + list(map(int, training_args.proj_output_dim.split('-')))
-        self.bn = nn.BatchNorm1d(sizes[-1], affine=False)
 
-        barlow_init(self,config,self.training_args)
+
+        vicreg_init(self,config,self.training_args)
         
-
     def forward(
         self,
         input_ids=None,
         attention_mask=None,
-        head_mask=None,
+        token_type_ids=None,
+        position_ids=None,
         inputs_embeds=None,
         labels=None,
         output_attentions=None,
@@ -250,19 +261,20 @@ class DebertaForVICReg(DebertaV2PreTrainedModel):
         mlm_input_ids=None,
         mlm_labels=None,
     ):
+
         if sent_emb:
             return normalized_sentemb_forward(
                 self,
                 self.deberta,
-                input_ids=input_ids,
-                attention_mask=attention_mask,
-                token_type_ids = token_type_ids,
-                position_ids = position_ids,
-                inputs_embeds = inputs_embeds,
-                output_attentions=output_attentions,
-                output_hidden_states=output_hidden_states,
-                return_dict=return_dict,
-            )
+                input_ids=None,
+                attention_mask=None,
+                token_type_ids=None,
+                position_ids=None,
+                inputs_embeds=None,
+                output_attentions=None,
+                output_hidden_states=None,
+                return_dict=None,
+        )
         else:
             return vicreg_forward(
                 self,
