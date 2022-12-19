@@ -10,14 +10,15 @@ from ..loss import CovarianceLoss, invariance_loss
 from ..save_utils import SaveResults
 
 """
-input_ids=input_ids,
-attention_mask=attention_mask,
-token_type_ids = token_type_ids,
-position_ids = position_ids,
-inputs_embeds = inputs_embeds,
-output_attentions=output_attentions,
-output_hidden_states=output_hidden_states,
-return_dict=return_dict,
+input_ids=None,
+attention_mask=None,
+token_type_ids=None,
+position_ids=None,
+head_mask=None,
+inputs_embeds=None,
+output_attentions=None,
+output_hidden_states=None,
+return_dict=None,
 """
 
 
@@ -34,6 +35,7 @@ def cl_forward(
     attention_mask=None,
     token_type_ids=None,
     position_ids=None,
+    head_mask=None,
     inputs_embeds=None,
     output_attentions=None,
     output_hidden_states=None,
@@ -59,15 +61,16 @@ def cl_forward(
     # Get raw embeddings
     outputs = encoder(    #### UPDATE HERE ####
         input_ids,
-        token_type_ids=token_type_ids,
         attention_mask=attention_mask,
+        token_type_ids=token_type_ids,
         position_ids=position_ids,
+        head_mask=head_mask,
         inputs_embeds=inputs_embeds,
         output_attentions=output_attentions,
-        output_hidden_states= True
+        output_hidden_states=True
         if cls.model_args.pooler_type in ["avg_top2", "avg_first_last"]
         else False,
-        return_dict=return_dict,
+        return_dict=True,
     )
 
     # MLM auxiliary objective
@@ -78,6 +81,7 @@ def cl_forward(
             attention_mask=attention_mask,
             token_type_ids=token_type_ids,
             position_ids=position_ids,
+            head_mask=head_mask,
             inputs_embeds=inputs_embeds,
             output_attentions=output_attentions,
             output_hidden_states=True
@@ -174,8 +178,6 @@ def cl_forward(
         attentions=outputs.attentions,
     )
 
-
-
 def corinfomax_forward(
     cls,
     encoder,
@@ -183,6 +185,7 @@ def corinfomax_forward(
     attention_mask=None,
     token_type_ids=None,
     position_ids=None,
+    head_mask=None,
     inputs_embeds=None,
     output_attentions=None,
     output_hidden_states=None,
@@ -212,6 +215,7 @@ def corinfomax_forward(
         attention_mask=attention_mask,
         token_type_ids=token_type_ids,
         position_ids=position_ids,
+        head_mask=head_mask,
         inputs_embeds=inputs_embeds,
         output_attentions=output_attentions,
         output_hidden_states=True
@@ -228,6 +232,7 @@ def corinfomax_forward(
             attention_mask=attention_mask,
             token_type_ids=token_type_ids,
             position_ids=position_ids,
+            head_mask=head_mask,
             inputs_embeds=inputs_embeds,
             output_attentions=output_attentions,
             output_hidden_states=True
@@ -329,7 +334,6 @@ def corinfomax_forward(
         attentions=outputs.attentions,
     )
 
-
 def vicreg_forward(
     cls,
     encoder,
@@ -337,6 +341,7 @@ def vicreg_forward(
     attention_mask=None,
     token_type_ids=None,
     position_ids=None,
+    head_mask=None,
     inputs_embeds=None,
     output_attentions=None,
     output_hidden_states=None,
@@ -366,6 +371,7 @@ def vicreg_forward(
         attention_mask=attention_mask,
         token_type_ids=token_type_ids,
         position_ids=position_ids,
+        head_mask=head_mask,
         inputs_embeds=inputs_embeds,
         output_attentions=output_attentions,
         output_hidden_states=True
@@ -373,7 +379,6 @@ def vicreg_forward(
         else False,
         return_dict=True,
     )
-
 
     # MLM auxiliary objective
     if mlm_input_ids is not None:
@@ -383,6 +388,7 @@ def vicreg_forward(
             attention_mask=attention_mask,
             token_type_ids=token_type_ids,
             position_ids=position_ids,
+            head_mask=head_mask,
             inputs_embeds=inputs_embeds,
             output_attentions=output_attentions,
             output_hidden_states=True
@@ -474,8 +480,6 @@ def vicreg_forward(
         attentions=outputs.attentions,
     )
 
-
-
 def barlow_forward(
     cls,
     encoder,
@@ -483,6 +487,7 @@ def barlow_forward(
     attention_mask=None,
     token_type_ids=None,
     position_ids=None,
+    head_mask=None,
     inputs_embeds=None,
     output_attentions=None,
     output_hidden_states=None,
@@ -511,6 +516,7 @@ def barlow_forward(
         attention_mask=attention_mask,
         token_type_ids=token_type_ids,
         position_ids=position_ids,
+        head_mask=head_mask,
         inputs_embeds=inputs_embeds,
         output_attentions=output_attentions,
         output_hidden_states=True
@@ -527,6 +533,7 @@ def barlow_forward(
             attention_mask=attention_mask,
             token_type_ids=token_type_ids,
             position_ids=position_ids,
+            head_mask=head_mask,
             inputs_embeds=inputs_embeds,
             output_attentions=output_attentions,
             output_hidden_states=True
@@ -623,8 +630,6 @@ def barlow_forward(
     )
 
 
-
-
 def sentemb_forward(
     cls,
     encoder,
@@ -632,6 +637,7 @@ def sentemb_forward(
     attention_mask=None,
     token_type_ids=None,
     position_ids=None,
+    head_mask=None,
     inputs_embeds=None,
     output_attentions=None,
     output_hidden_states=None,
@@ -645,6 +651,7 @@ def sentemb_forward(
         attention_mask=attention_mask,
         token_type_ids=token_type_ids,
         position_ids=position_ids,
+        head_mask=None,
         inputs_embeds=inputs_embeds,
         output_attentions=output_attentions,
         output_hidden_states=True
@@ -665,6 +672,7 @@ def sentemb_forward(
         last_hidden_state=outputs.last_hidden_state,
         hidden_states=outputs.hidden_states,
     )
+
 def normalized_sentemb_forward(
     cls,
     encoder,
@@ -672,6 +680,7 @@ def normalized_sentemb_forward(
     attention_mask=None,
     token_type_ids=None,
     position_ids=None,
+    head_mask=None,
     inputs_embeds=None,
     output_attentions=None,
     output_hidden_states=None,
@@ -685,6 +694,7 @@ def normalized_sentemb_forward(
         attention_mask=attention_mask,
         token_type_ids=token_type_ids,
         position_ids=position_ids,
+        head_mask=head_mask,
         inputs_embeds=inputs_embeds,
         output_attentions=output_attentions,
         output_hidden_states=True
