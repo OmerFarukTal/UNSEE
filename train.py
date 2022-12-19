@@ -53,6 +53,8 @@ from transformers.file_utils import (
 from simcse.model.bert_roberta_models import RobertaForCL, BertForCL, BertForCorInfoMax, RobertaForCorInfoMax,BertForVICReg, RobertaForVICReg,BertForBarlow,RobertaForBarlow
 from simcse.model.distilbert_model import DistilBertForCL,DistilBertForCorInfoMax,DistilBertForVICReg,DistilBertForBarlow
 from simcse.model.deberta_model import DebertaForCL, DebertaForCorInfoMax, DebertaForVICReg, DebertaForBarlow
+from simcse.model.convbert_model import ConvbertForCL, ConvbertForCorInfoMax, ConvbertForVICReg, ConvbertForBarlow
+from simcse.model.squeeze_bert_model import SqueezebertForCL, SqueezebertForCorInfoMax, SqueezebertForVICReg, SqueezebertForBarlow
 from simcse.trainers import CLTrainer
 
 logger = logging.getLogger(__name__)
@@ -664,6 +666,66 @@ def main():
                 use_auth_token=True if model_args.use_auth_token else None,
                 model_args=model_args,
             )
+        elif "squuezebert" in model_args.model_name_or_path:
+            if model_args.ssl_type == "simcse":
+                model_class = SqueezebertForCL
+            elif model_args.ssl_type == "corinfomax":
+                model_class = SqueezebertForCorInfoMax
+            
+            elif model_args.ssl_type == "vicreg":
+                model_class = SqueezebertForVICReg
+            elif model_args.ssl_type == "barlow":
+                model_class = SqueezebertForBarlow
+            else:
+                raise ValueError("Unknown ssl_type")
+            print(config)
+            model = model_class.from_pretrained(
+                model_args.model_name_or_path,
+                training_args,
+                from_tf=bool(".ckpt" in model_args.model_name_or_path),
+                config=config,
+                cache_dir=model_args.cache_dir,
+                revision=model_args.model_revision,
+                use_auth_token=True if model_args.use_auth_token else None,
+                model_args=model_args,
+            )
+            if model_args.do_mlm:
+                pretrained_model = SqueezeBertPreTrainedModel.from_pretrained(
+                    model_args.model_name_or_path
+                )
+                model.lm_head.load_state_dict(
+                    pretrained_model.cls.predictions.state_dict()
+                )
+        elif "convbert" in model_args.model_name_or_path:
+            if model_args.ssl_type == "simcse":
+                model_class = ConvbertForCL
+            elif model_args.ssl_type == "corinfomax":
+                model_class = ConvbertForCorInfoMax
+            
+            elif model_args.ssl_type == "vicreg":
+                model_class = ConvbertForVICReg
+            elif model_args.ssl_type == "barlow":
+                model_class = ConvbertForBarlow
+            else:
+                raise ValueError("Unknown ssl_type")
+            print(config)
+            model = model_class.from_pretrained(
+                model_args.model_name_or_path,
+                training_args,
+                from_tf=bool(".ckpt" in model_args.model_name_or_path),
+                config=config,
+                cache_dir=model_args.cache_dir,
+                revision=model_args.model_revision,
+                use_auth_token=True if model_args.use_auth_token else None,
+                model_args=model_args,
+            )
+            if model_args.do_mlm:
+                pretrained_model = ConvBertPreTrainedModel.from_pretrained(
+                    model_args.model_name_or_path
+                )
+                model.lm_head.load_state_dict(
+                    pretrained_model.cls.predictions.state_dict()
+                )
         elif "deberta" in model_args.model_name_or_path:
             if model_args.ssl_type == "simcse":
                 model_class = DebertaForCL
