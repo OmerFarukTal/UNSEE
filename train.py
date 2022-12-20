@@ -35,6 +35,10 @@ from transformers import (
     BertForPreTraining,
     RobertaModel,
     DistilBertPreTrainedModel,
+    ElectraPreTrainedModel,
+    ConvBertPreTrainedModel,
+    SqueezeBertPreTrainedModel,
+    DebertaPreTrainedModel,
 )
 from transformers.tokenization_utils_base import (
     BatchEncoding,
@@ -55,6 +59,7 @@ from simcse.model.distilbert_model import DistilBertForCL,DistilBertForCorInfoMa
 from simcse.model.deberta_model import DebertaForCL, DebertaForCorInfoMax, DebertaForVICReg, DebertaForBarlow
 from simcse.model.convbert_model import ConvbertForCL, ConvbertForCorInfoMax, ConvbertForVICReg, ConvbertForBarlow
 from simcse.model.squeeze_bert_model import SqueezebertForCL, SqueezebertForCorInfoMax, SqueezebertForVICReg, SqueezebertForBarlow
+from simcse.model.electra_model import ElectraForCL, ElectraForCorInfoMax, ElectraForVICReg, ElectraForBarlow
 from simcse.trainers import CLTrainer
 
 logger = logging.getLogger(__name__)
@@ -463,7 +468,7 @@ class BarlowTrainingArguments(TrainingArguments):
         default=False, metadata={"help": "Boolean value to add MLP"}
     )
     batch_size:int = field(
-        default=512, metadata = {"help": "Integer value to the "}
+        default=1024, metadata = {"help": "Integer value to the "}
     )
 
     freeze_bert: bool = field(
@@ -788,7 +793,36 @@ def main():
                 model.lm_head.load_state_dict(
                     pretrained_model.cls.predictions.state_dict()
                 )
-        
+        elif "electra" in model_args.model_name_or_path:
+            if model_args.ssl_type == "simcse":
+                model_class = ElectraForCL
+            elif model_args.ssl_type == "corinfomax":
+                model_class = ElectraForCorInfoMax
+            
+            elif model_args.ssl_type == "vicreg":
+                model_class = ElectraForVICReg
+            elif model_args.ssl_type == "barlow":
+                model_class = ElectraForBarlow
+            else:
+                raise ValueError("Unknown ssl_type")
+            print(config)
+            model = model_class.from_pretrained(
+                model_args.model_name_or_path,
+                training_args,
+                from_tf=bool(".ckpt" in model_args.model_name_or_path),
+                config=config,
+                cache_dir=model_args.cache_dir,
+                revision=model_args.model_revision,
+                use_auth_token=True if model_args.use_auth_token else None,
+                model_args=model_args,
+            )
+            if model_args.do_mlm:
+                pretrained_model = ElectraPreTrainedModel.from_pretrained(
+                    model_args.model_name_or_path
+                )
+                model.lm_head.load_state_dict(
+                    pretrained_model.cls.predictions.state_dict()
+                )
         else: 
             if model_args.ssl_type == "simcse":
                 model_class = BertForCL
@@ -827,7 +861,7 @@ def main():
         logger.info("Training new model from scratch")
         model = AutoModelForMaskedLM.from_config(config)
 
-    #model.resize_token_embeddings(len(tokenizer))
+    model.resize_token_embeddings(len(tokenizer))
 
     # Prepare features
     column_names = datasets["train"].column_names

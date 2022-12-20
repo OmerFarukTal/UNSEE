@@ -368,7 +368,7 @@ def vicreg_forward(
 
     # Get raw embeddings
     outputs = encoder(
-        input_ids,
+        input_ids=input_ids,
         attention_mask=attention_mask,
         token_type_ids=token_type_ids,
         position_ids=position_ids,
