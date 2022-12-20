@@ -1,9 +1,9 @@
 python3 train.py \
-    --model_name_or_path deberta-base-uncased \
+    --model_name_or_path bert-base-uncased \
     --train_file data/wiki1m_for_simcse.txt \
     --output_dir experiments/unsup-barlow-distilbert-base-uncased-b54 \
     --num_train_epochs 1 \
-    --per_device_train_batch_size 256 \
+    --per_device_train_batch_size 128 \
     --learning_rate 1e-6 \
     --max_seq_length 32 \
     --evaluation_strategy steps \
@@ -19,7 +19,7 @@ python3 train.py \
     --do_proj true \
     --augmentation_method dropout \
     --do_eval \
-    --ssl_type simcse \
+    --ssl_type vicreg \
     --proj_output_dim 8192-8192-8192 \
     --warmup_steps 1000 \
     --tensorboard_save_frequency 37\

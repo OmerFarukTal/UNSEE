@@ -41,8 +41,7 @@ class ConvbertForCL(ConvBertPreTrainedModel):
 
         if self.model_args.do_mlm:
             self.lm_head = ConvBertForMaskedLM(config)
-        sizes = [2048] + list(map(int, training_args.proj_output_dim.split('-')))
-        self.bn = nn.BatchNorm1d(sizes[-1], affine=False)
+
 
         cl_init(self,config,self.training_args)
         
@@ -66,33 +65,34 @@ class ConvbertForCL(ConvBertPreTrainedModel):
             return normalized_sentemb_forward(
                 self,
                 self.convbert,
-                input_ids=None,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                inputs_embeds=None,
-                output_attentions=None,
-                output_hidden_states=None,
-                return_dict=None,
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                token_type_ids=token_type_ids,
+                position_ids=position_ids,
+                head_mask=head_mask,
+                inputs_embeds=inputs_embeds,
+                output_attentions=output_attentions,
+                output_hidden_states=output_hidden_states,
+                return_dict=return_dict,
                 
             )
         else:
             return cl_forward(
                 self,
                 self.convbert,
-                input_ids=None,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                inputs_embeds=None,
-                output_attentions=None,
-                output_hidden_states=None,
-                return_dict=None,
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                token_type_ids=token_type_ids,
+                position_ids=position_ids,
+                head_mask=head_mask,
+                inputs_embeds=inputs_embeds,
+                output_attentions=output_attentions,
+                output_hidden_states=output_hidden_states,
+                return_dict=return_dict,
                 mlm_input_ids=mlm_input_ids,
                 mlm_labels=mlm_labels
             )
+
 
 class ConvbertForCorInfoMax(ConvBertPreTrainedModel):
     _keys_to_ignore_on_load_missing = [r"position_ids"]
@@ -107,10 +107,9 @@ class ConvbertForCorInfoMax(ConvBertPreTrainedModel):
 
         if self.model_args.do_mlm:
             self.lm_head = ConvBertForMaskedLM(config)
-        sizes = [2048] + list(map(int, training_args.proj_output_dim.split('-')))
-        self.bn = nn.BatchNorm1d(sizes[-1], affine=False)
 
-        barlow_init(self,config,self.training_args)
+
+        corinfomax_init(self,config,self.training_args)
         
 
     def forward(
@@ -132,30 +131,30 @@ class ConvbertForCorInfoMax(ConvBertPreTrainedModel):
             return normalized_sentemb_forward(
                 self,
                 self.convbert,
-                input_ids=None,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                inputs_embeds=None,
-                output_attentions=None,
-                output_hidden_states=None,
-                return_dict=None,
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                token_type_ids=token_type_ids,
+                position_ids=position_ids,
+                head_mask=head_mask,
+                inputs_embeds=inputs_embeds,
+                output_attentions=output_attentions,
+                output_hidden_states=output_hidden_states,
+                return_dict=return_dict,
                 
             )
         else:
             return corinfomax_forward(
                 self,
                 self.convbert,
-                input_ids=None,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                inputs_embeds=None,
-                output_attentions=None,
-                output_hidden_states=None,
-                return_dict=None,
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                token_type_ids=token_type_ids,
+                position_ids=position_ids,
+                head_mask=head_mask,
+                inputs_embeds=inputs_embeds,
+                output_attentions=output_attentions,
+                output_hidden_states=output_hidden_states,
+                return_dict=return_dict,
                 mlm_input_ids=mlm_input_ids,
                 mlm_labels=mlm_labels
             )
@@ -168,14 +167,12 @@ class ConvbertForBarlow(ConvBertPreTrainedModel):
         super().__init__(config)
         self.model_args = model_kargs["model_args"]
         self.training_args = training_args
-        self.deberta = ConvBertModel(config)
+        self.convbert = ConvBertModel(config)
 
      
 
         if self.model_args.do_mlm:
             self.lm_head = ConvBertForMaskedLM(config)
-        sizes = [2048] + list(map(int, training_args.proj_output_dim.split('-')))
-        self.bn = nn.BatchNorm1d(sizes[-1], affine=False)
 
         barlow_init(self,config,self.training_args)
         
@@ -199,32 +196,34 @@ class ConvbertForBarlow(ConvBertPreTrainedModel):
             return normalized_sentemb_forward(
                 self,
                 self.convbert,
-                input_ids=None,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                inputs_embeds=None,
-                output_attentions=None,
-                output_hidden_states=None,
-                return_dict=None,
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                token_type_ids=token_type_ids,
+                position_ids=position_ids,
+                head_mask=head_mask,
+                inputs_embeds=inputs_embeds,
+                output_attentions=output_attentions,
+                output_hidden_states=output_hidden_states,
+                return_dict=return_dict,
+                
             )
         else:
             return barlow_forward(
                 self,
                 self.convbert,
-                input_ids=None,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                inputs_embeds=None,
-                output_attentions=None,
-                output_hidden_states=None,
-                return_dict=None,
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                token_type_ids=token_type_ids,
+                position_ids=position_ids,
+                head_mask=head_mask,
+                inputs_embeds=inputs_embeds,
+                output_attentions=output_attentions,
+                output_hidden_states=output_hidden_states,
+                return_dict=return_dict,
                 mlm_input_ids=mlm_input_ids,
                 mlm_labels=mlm_labels
             )
+
 
 class ConvbertForVICReg(ConvBertPreTrainedModel):
     _keys_to_ignore_on_load_missing = [r"position_ids"]
@@ -233,16 +232,15 @@ class ConvbertForVICReg(ConvBertPreTrainedModel):
         super().__init__(config)
         self.model_args = model_kargs["model_args"]
         self.training_args = training_args
-        self.deberta = ConvBertModel(config)
+        self.convbert = ConvBertModel(config)
 
      
 
         if self.model_args.do_mlm:
             self.lm_head = ConvBertForMaskedLM(config)
-        sizes = [2048] + list(map(int, training_args.proj_output_dim.split('-')))
-        self.bn = nn.BatchNorm1d(sizes[-1], affine=False)
 
-        barlow_init(self,config,self.training_args)
+
+        vicreg_init(self,config,self.training_args)
         
 
     def forward(
@@ -264,29 +262,30 @@ class ConvbertForVICReg(ConvBertPreTrainedModel):
             return normalized_sentemb_forward(
                 self,
                 self.convbert,
-                input_ids=None,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                inputs_embeds=None,
-                output_attentions=None,
-                output_hidden_states=None,
-                return_dict=None,
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                token_type_ids=token_type_ids,
+                position_ids=position_ids,
+                head_mask=head_mask,
+                inputs_embeds=inputs_embeds,
+                output_attentions=output_attentions,
+                output_hidden_states=output_hidden_states,
+                return_dict=return_dict,
+                
             )
         else:
-            return vicreg_forward(
+                return vicreg_forward(
                 self,
                 self.convbert,
-                input_ids=None,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                inputs_embeds=None,
-                output_attentions=None,
-                output_hidden_states=None,
-                return_dict=None,
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                token_type_ids=token_type_ids,
+                position_ids=position_ids,
+                head_mask=head_mask,
+                inputs_embeds=inputs_embeds,
+                output_attentions=output_attentions,
+                output_hidden_states=output_hidden_states,
+                return_dict=return_dict,
                 mlm_input_ids=mlm_input_ids,
                 mlm_labels=mlm_labels
             )

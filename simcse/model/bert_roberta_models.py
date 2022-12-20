@@ -1,3 +1,7 @@
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.distributed as dist
 
 from .init import (
                 cl_init,
@@ -39,7 +43,7 @@ class BertForCL(BertPreTrainedModel):
         if self.model_args.do_mlm:
             self.lm_head = BertLMPredictionHead(config)
 
-        cl_init(self, config)
+        cl_init(self, config,self.training_args)
 
     def forward(
         self,

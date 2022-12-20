@@ -41,8 +41,7 @@ class SqueezebertForCL(SqueezeBertPreTrainedModel):
 
         if self.model_args.do_mlm:
             self.lm_head = SqueezeBertForMaskedLM(config)
-        sizes = [2048] + list(map(int, training_args.proj_output_dim.split('-')))
-        self.bn = nn.BatchNorm1d(sizes[-1], affine=False)
+
 
         cl_init(self,config,self.training_args)
         
@@ -66,32 +65,32 @@ class SqueezebertForCL(SqueezeBertPreTrainedModel):
             return normalized_sentemb_forward(
                 self,
                 self.squeezebert,
-                input_ids=None,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                inputs_embeds=None,
-                output_attentions=None,
-                output_hidden_states=None,
-                return_dict=None,
-                
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                token_type_ids=token_type_ids,
+                position_ids=position_ids,
+                head_mask=head_mask,
+                inputs_embeds=inputs_embeds,
+                output_attentions=output_attentions,
+                output_hidden_states=output_hidden_states,
+                return_dict=return_dict,
             )
+
         else:
             return cl_forward(
                 self,
                 self.squeezebert,
-                input_ids=None,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                inputs_embeds=None,
-                output_attentions=None,
-                output_hidden_states=None,
-                return_dict=None,
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                token_type_ids=token_type_ids,
+                position_ids=position_ids,
+                head_mask=head_mask,
+                inputs_embeds=inputs_embeds,
+                output_attentions=output_attentions,
+                output_hidden_states=output_hidden_states,
+                return_dict=return_dict,
                 mlm_input_ids=mlm_input_ids,
-                mlm_labels=mlm_labels
+                mlm_labels=mlm_labels,
             )
 
 class SqueezebertForCorInfoMax(SqueezeBertPreTrainedModel):
@@ -107,10 +106,9 @@ class SqueezebertForCorInfoMax(SqueezeBertPreTrainedModel):
 
         if self.model_args.do_mlm:
             self.lm_head = SquuezeBertForMaskedLM(config)
-        sizes = [2048] + list(map(int, training_args.proj_output_dim.split('-')))
-        self.bn = nn.BatchNorm1d(sizes[-1], affine=False)
 
-        barlow_init(self,config,self.training_args)
+
+        corinfomax_init(self,config,self.training_args)
         
 
     def forward(
@@ -132,32 +130,30 @@ class SqueezebertForCorInfoMax(SqueezeBertPreTrainedModel):
             return normalized_sentemb_forward(
                 self,
                 self.squeezebert,
-                input_ids=None,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                inputs_embeds=None,
-                output_attentions=None,
-                output_hidden_states=None,
-                return_dict=None,
-                
-            )
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                token_type_ids=token_type_ids,
+                position_ids=position_ids,
+                head_mask=head_mask,
+                inputs_embeds=inputs_embeds,
+                output_attentions=output_attentions,
+                output_hidden_states=output_hidden_states,
+                return_dict=return_dict,) 
         else:
             return corinfomax_forward(
                 self,
                 self.squeezebert,
-                input_ids=None,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                inputs_embeds=None,
-                output_attentions=None,
-                output_hidden_states=None,
-                return_dict=None,
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                token_type_ids=token_type_ids,
+                position_ids=position_ids,
+                head_mask=head_mask,
+                inputs_embeds=inputs_embeds,
+                output_attentions=output_attentions,
+                output_hidden_states=output_hidden_states,
+                return_dict=return_dict,
                 mlm_input_ids=mlm_input_ids,
-                mlm_labels=mlm_labels
+                mlm_labels=mlm_labels,
             )
 
 
@@ -168,7 +164,7 @@ class SqueezebertForBarlow(SqueezeBertPreTrainedModel):
         super().__init__(config)
         self.model_args = model_kargs["model_args"]
         self.training_args = training_args
-        self.deberta = SqueezeBertModel(config)
+        self.squeezebert = SqueezeBertModel(config)
 
      
 
@@ -198,32 +194,32 @@ class SqueezebertForBarlow(SqueezeBertPreTrainedModel):
         if sent_emb:
             return normalized_sentemb_forward(
                 self,
-                self.squeezebert,
-                input_ids=None,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                inputs_embeds=None,
-                output_attentions=None,
-                output_hidden_states=None,
-                return_dict=None,
-            )
+                self.squuezebert,
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                token_type_ids=token_type_ids,
+                position_ids=position_ids,
+                head_mask=head_mask,
+                inputs_embeds=inputs_embeds,
+                output_attentions=output_attentions,
+                output_hidden_states=output_hidden_states,
+                return_dict=return_dict,)
+                
         else:
             return barlow_forward(
                 self,
-                self.squeezebert,
-                input_ids=None,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                inputs_embeds=None,
-                output_attentions=None,
-                output_hidden_states=None,
-                return_dict=None,
+                self.squeeze_bert_model,
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                token_type_ids=token_type_ids,
+                position_ids=position_ids,
+                head_mask=head_mask,
+                inputs_embeds=inputs_embeds,
+                output_attentions=output_attentions,
+                output_hidden_states=output_hidden_states,
+                return_dict=return_dict,
                 mlm_input_ids=mlm_input_ids,
-                mlm_labels=mlm_labels
+                mlm_labels=mlm_labels,
             )
 
 class SqueezebertForVICReg(SqueezeBertPreTrainedModel):
@@ -233,16 +229,15 @@ class SqueezebertForVICReg(SqueezeBertPreTrainedModel):
         super().__init__(config)
         self.model_args = model_kargs["model_args"]
         self.training_args = training_args
-        self.deberta = SqueezeBertModel(config)
+        self.squeezebert = SqueezeBertModel(config)
 
      
 
         if self.model_args.do_mlm:
             self.lm_head = SqueezeBertForMaskedLM(config)
-        sizes = [2048] + list(map(int, training_args.proj_output_dim.split('-')))
-        self.bn = nn.BatchNorm1d(sizes[-1], affine=False)
 
-        barlow_init(self,config,self.training_args)
+
+        vicreg_init(self,config,self.training_args)
         
 
     def forward(
@@ -259,34 +254,35 @@ class SqueezebertForVICReg(SqueezeBertPreTrainedModel):
         sent_emb=False,
         mlm_input_ids=None,
         mlm_labels=None,
-    ):
+    ):        
         if sent_emb:
             return normalized_sentemb_forward(
                 self,
                 self.squeezebert,
-                input_ids=None,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                inputs_embeds=None,
-                output_attentions=None,
-                output_hidden_states=None,
-                return_dict=None,
-            )
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                token_type_ids=token_type_ids,
+                position_ids=position_ids,
+                head_mask=head_mask,
+                inputs_embeds=inputs_embeds,
+                output_attentions=output_attentions,
+                output_hidden_states=output_hidden_states,
+                return_dict=return_dict,)
+                
+
         else:
             return vicreg_forward(
                 self,
                 self.squeezebert,
-                input_ids=None,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                inputs_embeds=None,
-                output_attentions=None,
-                output_hidden_states=None,
-                return_dict=None,
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                token_type_ids=token_type_ids,
+                position_ids=position_ids,
+                head_mask=head_mask,
+                inputs_embeds=inputs_embeds,
+                output_attentions=output_attentions,
+                output_hidden_states=output_hidden_states,
+                return_dict=return_dict,
                 mlm_input_ids=mlm_input_ids,
-                mlm_labels=mlm_labels
+                mlm_labels=mlm_labels,
             )

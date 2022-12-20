@@ -1,7 +1,6 @@
 from ..loss import CovarianceLoss, invariance_loss
 from .utils import MLPLayer,OneLayeredMLPLayer,Similarity,Pooler
-from ..save_utils import SaveResults
-
+from ..save_utils import SaveResults,SaveResultsVICReg,SaveResultsBarlow
 
 def cl_init(cls, config, training_args):
     """
@@ -41,8 +40,8 @@ def vicreg_init(cls, config, training_args):
         cls.mlp = MLPLayer(config, training_args)
     cls.sim = Similarity(temp=cls.model_args.temp)
     cls.init_weights()
-    cls.save_results = SaveResults(cls.model_args, cls.training_args)
-    cls.writer = SaveResults.create_results(cls.save_results)
+    cls.save_results = SaveResultsVICReg(cls.model_args, cls.training_args)
+    cls.writer = SaveResultsVICReg.create_results(cls.save_results)
 
 def barlow_init(cls, config, training_args):
     """
@@ -54,5 +53,5 @@ def barlow_init(cls, config, training_args):
         cls.mlp = MLPLayer(config, training_args)
     cls.sim = Similarity(temp=cls.model_args.temp)
     cls.init_weights()
-    cls.save_results = SaveResults(cls.model_args, cls.training_args)
-    cls.writer = SaveResults.create_results(cls.save_results)
+    cls.save_results = SaveResultsBarlow(cls.model_args, cls.training_args)
+    cls.writer = SaveResultsBarlow.create_results(cls.save_results)

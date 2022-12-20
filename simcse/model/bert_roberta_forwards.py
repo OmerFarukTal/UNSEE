@@ -456,9 +456,8 @@ def vicreg_forward(
     save_results = cls.save_results
     writer = cls.writer 
 
-    save_results.track_values(loss.item(), cov_loss.item(), repr_loss.item(), std_loss.item(), 0, cls_output)
-    save_results.save_values(writer, cls.training_args.std_coeff, cls.training_args.cov_coeff, cls.training_args.sim_coeff, encoder.encoder.layer[-1].output.LayerNorm.weight, encoder.encoder.layer[-1].output.LayerNorm.bias)
-
+    save_results.track_values(loss.item(), cov_loss.item(), repr_loss.item(), std_loss.item(), cls_output)
+    save_results.save_values(writer, cls.training_args.cov_coeff, cls.training_args.sim_coeff, cls.training_args.std_coeff, encoder.encoder.layer[-1].output.LayerNorm.weight, encoder.encoder.layer[-1].output.LayerNorm.bias)
     # Calculate loss for MLM
     if mlm_outputs is not None and mlm_labels is not None:
         loss_fct = nn.CrossEntropyLoss()
@@ -611,7 +610,8 @@ def barlow_forward(
 
     #save_results.track_values(loss.item(), cov_loss.item(), repr_loss.item(), std_loss.item(), 0, cls_output)
     #save_results.save_values(writer, cls.training_args.std_coeff, cls.training_args.cov_coeff, cls.training_args.sim_coeff, encoder.encoder.layer[-1].output.LayerNorm.weight, encoder.encoder.layer[-1].output.LayerNorm.bias)
-
+    save_results.track_values(loss.item(),on_diag.item(),off_diag.item(),cls_output)
+    save_results.save_values(writer,cls.training_args.lambd,encoder.encoder.layer[-1].output.LayerNorm.weight,encoder.encoder.layer[-1].output.LayerNorm.bias)
     # Calculate loss for MLM
     if mlm_outputs is not None and mlm_labels is not None:
         loss_fct = nn.CrossEntropyLoss()

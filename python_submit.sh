@@ -33,11 +33,11 @@
 #SBATCH --partition mid
 #SBATCH --account=users
 #SBATCH --qos=users
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:4
 #SBATCH --time=6:00:00
 #SBATCH --output=simcse-%J.log
 #SBATCH --mail-type=ALL
-#SBATCH --constraint="tesla_v100"
+#SBATCH --constraint="tesla_a100"
 ##SBATCH --mail-user=ocagatan19@ku.edu.tr
 
 # Please read before you run: http://login.kuacc.ku.edu.tr/#h.3qapvarv2g49
@@ -45,10 +45,5 @@
 ################################################################################
 ##################### !!! DO NOT EDIT BELOW THIS LINE !!! ######################
 ################################################################################
-
-# Load Anaconda
-echo "======================="
-echo "Loading Anaconda Module..."
-echo "======================="
 
 ./run_barlow.sh

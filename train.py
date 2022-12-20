@@ -529,7 +529,7 @@ def main():
     # We now keep distinct sets of args, for a cleaner separation of concerns.
 
     parser = HfArgumentParser(
-        (ModelArguments, DataTrainingArguments, BarlowTrainingArguments)
+        (ModelArguments, DataTrainingArguments,BarlowTrainingArguments)
     )
     if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
         # If we pass only one argument to the script and it's the path to a json file,
@@ -666,7 +666,7 @@ def main():
                 use_auth_token=True if model_args.use_auth_token else None,
                 model_args=model_args,
             )
-        elif "squuezebert" in model_args.model_name_or_path:
+        elif "squeezebert" in model_args.model_name_or_path:
             if model_args.ssl_type == "simcse":
                 model_class = SqueezebertForCL
             elif model_args.ssl_type == "corinfomax":
@@ -696,7 +696,7 @@ def main():
                 model.lm_head.load_state_dict(
                     pretrained_model.cls.predictions.state_dict()
                 )
-        elif "convbert" in model_args.model_name_or_path:
+        elif "conv-bert" in model_args.model_name_or_path:
             if model_args.ssl_type == "simcse":
                 model_class = ConvbertForCL
             elif model_args.ssl_type == "corinfomax":
@@ -789,7 +789,7 @@ def main():
                     pretrained_model.cls.predictions.state_dict()
                 )
         
-        elif "bert" in model_args.model_name_or_path:
+        else: 
             if model_args.ssl_type == "simcse":
                 model_class = BertForCL
             elif model_args.ssl_type == "corinfomax":
@@ -821,14 +821,13 @@ def main():
                 )
         
         
-        else:
-            raise NotImplementedError
+
     else:
         raise NotImplementedError
         logger.info("Training new model from scratch")
         model = AutoModelForMaskedLM.from_config(config)
 
-    model.resize_token_embeddings(len(tokenizer))
+    #model.resize_token_embeddings(len(tokenizer))
 
     # Prepare features
     column_names = datasets["train"].column_names
