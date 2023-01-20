@@ -1,9 +1,9 @@
 python3 train.py \
-    --model_name_or_path bert-base-uncased \
+    --model_name_or_path roberta-base \
     --train_file data/wiki1m_for_simcse.txt \
-    --output_dir experiments/unsup-corinfomax-bert-base-uncased-b51 \
+    --output_dir experiments/unsup-vicreg/roberta-base-b53 \
     --num_train_epochs 1 \
-    --per_device_train_batch_size 128 \
+    --per_device_train_batch_size 256 \
     --learning_rate 1e-6 \
     --max_seq_length 32 \
     --evaluation_strategy steps \
@@ -20,7 +20,7 @@ python3 train.py \
     --augmentation_method dropout \
     --do_eval \
     --ssl_type vicreg \
-    --proj_output_dim 8192-8192-8192 \
+    --proj_output_dim 768 \
     --warmup_steps 1000 \
     --tensorboard_save_frequency 37\
     --hidden_dropout_prob 0.1 \

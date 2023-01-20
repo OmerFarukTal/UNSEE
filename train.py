@@ -1,6 +1,7 @@
 import logging
 import math
 import os
+import pickle
 import sys
 from dataclasses import dataclass, field
 from typing import Optional, Union, List, Dict, Tuple
@@ -269,11 +270,11 @@ class OurTrainingArguments(TrainingArguments):
     )
 
     cov_loss_weight: float = field(
-        default=1.0, metadata={"help": "Weight for covariance loss"},
+        default=1.5, metadata={"help": "Weight for covariance loss"},
     )
 
     sim_loss_weight: float = field(
-        default=250.0, metadata={"help": "Similarity MSE loss weight"}
+        default=7000.0, metadata={"help": "Similarity MSE loss weight"}
     )
 
     cos_loss_weight: float = field(
@@ -365,15 +366,15 @@ class VICRegTrainingArguments(TrainingArguments):
     )
 
     cov_coeff: float = field(
-        default=1.0, metadata={"help": "Weight for covariance loss"},
+        default=10.0, metadata={"help": "Weight for covariance loss"}, # 1.0
     )
 
     sim_coeff: float = field(
-        default=100.0, metadata={"help": "Similarity MSE loss weight"}
+        default=2.0, metadata={"help": "Similarity MSE loss weight"} # 25.0
     )
 
     std_coeff: float = field(
-        default=25.0, metadata={"help": "Cos similarity loss weight"}
+        default=2.0, metadata={"help": "Cos similarity loss weight"} # 25.0
     )
 
     do_proj: bool = field(
@@ -460,7 +461,7 @@ class BarlowTrainingArguments(TrainingArguments):
     )
 
     lambd: float = field(
-        default=0.0051, metadata={"help": "Weight for covariance loss"},
+        default= 0.01, metadata={"help": "Weight for covariance loss"},
     )
 
 
@@ -468,7 +469,7 @@ class BarlowTrainingArguments(TrainingArguments):
         default=False, metadata={"help": "Boolean value to add MLP"}
     )
     batch_size:int = field(
-        default=1024, metadata = {"help": "Integer value to the "}
+        default=512, metadata = {"help": "Integer value to the "}
     )
 
     freeze_bert: bool = field(
@@ -553,11 +554,12 @@ def main():
         and training_args.do_train
         and not training_args.overwrite_output_dir
     ):
-        raise ValueError(
-            f"Output directory ({training_args.output_dir}) already exists and is not empty."
+        raise ValueError(f"Output directory ({training_args.output_dir}) already exists and is not empty."
             "Use --overwrite_output_dir to overcome."
         )
 
+    
+    
     # Setup logging
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
@@ -580,6 +582,7 @@ def main():
     logger.info("Training/evaluation parameters %s", training_args)
 
     # Set seed before initializing model.
+    torch.save(model_args,training_args.output_dir + "/model_args.bin")
     set_seed(training_args.seed)
 
     # Get the datasets: you can either provide your own CSV/JSON/TXT training and evaluation files (see below)
@@ -658,6 +661,8 @@ def main():
                 model_class = RobertaForCorInfoMax
             elif model_args.ssl_type == "vicreg":
                 model_class = RobertaForVICReg
+            elif model_args.ssl_type =="barlow":
+                model_class = RobertaForBarlow
             else:
                 raise ValueError("Unknown ssl_type")
 
@@ -866,11 +871,11 @@ def main():
     # Prepare features
     column_names = datasets["train"].column_names
     sent2_cname = None
-    if len(column_names) == 2:
+    if len(column_names) == 3:
         # Pair datasets
         sent0_cname = column_names[0]
         sent1_cname = column_names[1]
-    elif len(column_names) == 3:
+    elif len(column_names) == 4:
         # Pair datasets with hard negatives
         sent0_cname = column_names[0]
         sent1_cname = column_names[1]
@@ -1284,7 +1289,8 @@ def main():
         data_collator=data_collator,
     )
     trainer.model_args = model_args
-
+   
+    
     # Training
     if training_args.do_train:
         model_path = (
@@ -1310,7 +1316,10 @@ def main():
             trainer.state.save_to_json(
                 os.path.join(training_args.output_dir, "trainer_state.json")
             )
+            pickle.dump(model_args, open(training_args.output_dir + "/model_args.bin", "wb"))
+            torch.save(model_args,training_args.output_dir + "/model_args.bin")
 
+    
     # Evaluation
     results = {}
     if training_args.do_eval:

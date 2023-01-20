@@ -6,42 +6,22 @@ import argparse
 from prettytable import PrettyTable
 import torch
 import transformers
-from transformers import AutoModel, AutoTokenizer
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from transformers import AutoTokenizer,AutoConfig
+
+from train import BarlowTrainingArguments,OurTrainingArguments,VICRegTrainingArguments,ModelArguments
+from simcse.model.bert_roberta_models import RobertaForCL, BertForCL, BertForCorInfoMax, RobertaForCorInfoMax,BertForVICReg, RobertaForVICReg,BertForBarlow,RobertaForBarlow
+from simcse.model.distilbert_model import DistilBertForCL,DistilBertForCorInfoMax,DistilBertForVICReg,DistilBertForBarlow
+
 # Set up logger
-logging.basicConfig(format="%(asctime)s : %(message)s", level=logging.DEBUG)
+logging.basicConfig(format='%(asctime)s : %(message)s', level=logging.DEBUG)
 
 # Set PATHs
-PATH_TO_SENTEVAL = "./SentEval"
-PATH_TO_DATA = "./SentEval/data"
+PATH_TO_SENTEVAL = './SentEval'
+PATH_TO_DATA = './SentEval/data'
 
 # Import SentEval
 sys.path.insert(0, PATH_TO_SENTEVAL)
 import senteval
-
-class MLPLayer(nn.Module):
-    """
-    Head for getting sentence representations over RoBERTa/BERT's CLS representation.
-    """
-
-    def __init__(self, proj_output_dim):
-        super().__init__()
-        sizes = [768] + list(map(int, proj_output_dim.split('-')))
-        layers = []
-        for i in range(len(sizes) - 2):
-            layers.append(nn.Linear(sizes[i], sizes[i + 1]))
-            layers.append(nn.BatchNorm1d(sizes[i + 1]))
-            layers.append(nn.ReLU())
-
-        layers.append(nn.Linear(sizes[-2], sizes[-1],bias=False))
-        self.projector = nn.Sequential(*layers) #SequentialPrinter(layers, "MLPLayer")
-        
-    def forward(self, features, **kwargs):
-        x = self.projector(features)
-
-        return x
 
 def print_table(task_names, scores):
     tb = PrettyTable()
@@ -49,193 +29,114 @@ def print_table(task_names, scores):
     tb.add_row(scores)
     print(tb)
 
-
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--model_name_or_path", type=str, help="Transformers' model name or path"
-    )
-    parser.add_argument(
-        "--pooler",
-        type=str,
-        choices=["cls", "cls_before_pooler", "avg", "avg_top2", "avg_first_last"],
-        default="cls",
-        help="Which pooler to use",
-    )
-    parser.add_argument(
-        "--mode",
-        type=str,
-        choices=["dev", "test", "fasttest"],
-        default="test",
-        help="What evaluation mode to use (dev: fast mode, dev results; test: full mode, test results); fasttest: fast mode, test results",
-    )
-    parser.add_argument(
-        "--task_set",
-        type=str,
-        choices=["sts", "transfer", "full", "na"],
-        default="full",
-        help="What set of tasks to evaluate on. If not 'na', this will override '--tasks'",
-    )
-    parser.add_argument(
-        "--tasks",
-        type=str,
-        nargs="+",
-        default=[
-            "STS12",
-            "STS13",
-            "STS14",
-            "STS15",
-            "STS16",
-            "MR",
-            "CR",
-            "MPQA",
-            "SUBJ",
-            "SST2",
-            "TREC",
-            "MRPC",
-            "SICKRelatedness",
-            "STSBenchmark",
-        ],
-        help="Tasks to evaluate on. If '--task_set' is specified, this will be overridden",
-    )
-
-    parser.add_argument(
-        "--proj_output_dim",
-        type=str,
-        nargs="+",
-        default="4096-4096-128",
-        help="MLP layers",
-    )
-
+    parser.add_argument("--model_name_or_path", type=str, 
+            help="Transformers' model name or path")
+    parser.add_argument("--pooler", type=str, 
+            choices=['cls', 'cls_before_pooler', 'avg', 'avg_top2', 'avg_first_last'], 
+            default='cls', 
+            help="Which pooler to use")
+    parser.add_argument("--mode", type=str, 
+            choices=['dev', 'test', 'fasttest'],
+            default='test', 
+            help="What evaluation mode to use (dev: fast mode, dev results; test: full mode, test results); fasttest: fast mode, test results")
+    parser.add_argument("--task_set", type=str, 
+            choices=['sts', 'transfer', 'full', 'na'],
+            default='sts',
+            help="What set of tasks to evaluate on. If not 'na', this will override '--tasks'")
+    parser.add_argument("--tasks", type=str, nargs='+', 
+            default=['STS12', 'STS13', 'STS14', 'STS15', 'STS16',
+                     'MR', 'CR', 'MPQA', 'SUBJ', 'SST2', 'TREC', 'MRPC',
+                     'SICKRelatedness', 'STSBenchmark'], 
+            help="Tasks to evaluate on. If '--task_set' is specified, this will be overridden")
+    
     args = parser.parse_args()
-
+    config = AutoConfig.from_pretrained(args.model_name_or_path)
+    training_args = torch.load(args.model_name_or_path +"/training_args.bin")
+    model_args = torch.load(args.model_name_or_path + "/model_args.bin")
     # Load transformers' model checkpoint
-    model = AutoModel.from_pretrained(args.model_name_or_path)
+    if("barlow" in args.model_name_or_path):
+        if("roberta" in args.model_name_or_path):
+            model = RobertaForBarlow(config=config,training_args=training_args,model_args = model_args)
+            model.load_state_dict(torch.load(args.model_name_or_path + "/pytorch_model.bin"))
+
+
+        elif("distilbert" in args.model_name_or_path):
+            model = DistilBertForBarlow(config=config,training_args=training_args,model_args = model_args)
+            model.load_state_dict(torch.load(args.model_name_or_path + "/pytorch_model.bin"))
+        else:
+            model = BertForBarlow(config=config,training_args=training_args,model_args = model_args)
+            model.load_state_dict(torch.load(args.model_name_or_path + "/pytorch_model.bin"))
+    elif("vicreg" in args.model_name_or_path):
+        if("roberta" in args.model_name_or_path):
+            model = RobertaForVICReg(config=config,training_args=training_args,model_args = model_args)
+            model.load_state_dict(torch.load(args.model_name_or_path + "/pytorch_model.bin"))
+        elif("distilbert" in args.model_name_or_path):
+            model = DistilBertForVICReg(config=config,training_args=training_args,model_args = model_args)
+            model.load_state_dict(torch.load(args.model_name_or_path + "/pytorch_model.bin"))
+        else:
+            model = BertForVICReg(config=config,training_args=training_args,model_args = model_args)
+            model.load_state_dict(torch.load(args.model_name_or_path + "/pytorch_model.bin"))
+    else:
+        if("roberta" in args.model_name_or_path):
+            model = RobertaForCorInfoMax(config=config,training_args=training_args,model_args = model_args)
+            model.load_state_dict(torch.load(args.model_name_or_path + "/pytorch_model.bin"))
+        elif("distilbert" in args.model_name_or_path):
+            model = DistilBertForCorInfoMax(config=config,training_args=training_args,model_args = model_args)
+            model.load_state_dict(torch.load(args.model_name_or_path + "/pytorch_model.bin"))
+        else:
+            model = BertForCorInfoMax(config=config,training_args=training_args,model_args = model_args)
+            model.load_state_dict(torch.load(args.model_name_or_path + "/pytorch_model.bin"))
+
+
+
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path)
+    model.resize_token_embeddings(len(tokenizer))
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
-
-    mlp = MLPLayer(args.proj_output_dim[0])
-
+    
     # Set up the tasks
-    if args.task_set == "sts":
-        args.tasks = [
-            "STS12",
-            "STS13",
-            "STS14",
-            "STS15",
-            "STS16",
-            "STSBenchmark",
-            "SICKRelatedness",
-        ]
-    elif args.task_set == "transfer":
-        args.tasks = ["MR", "CR", "MPQA", "SUBJ", "SST2", "TREC", "MRPC"]
-    elif args.task_set == "full":
-        args.tasks = [
-            "STS12",
-            "STS13",
-            "STS14",
-            "STS15",
-            "STS16",
-            "STSBenchmark",
-            "SICKRelatedness",
-        ]
-        args.tasks += ["MR", "CR", "MPQA", "SUBJ", "SST2", "TREC", "MRPC"]
+    if args.task_set == 'sts':
+        args.tasks = ['STS12', 'STS13', 'STS14', 'STS15', 'STS16', 'STSBenchmark', 'SICKRelatedness']
+    elif args.task_set == 'transfer':
+        args.tasks = ['MR', 'CR', 'MPQA', 'SUBJ', 'SST2', 'TREC', 'MRPC']
+    elif args.task_set == 'full':
+        args.tasks = ['STS12', 'STS13', 'STS14', 'STS15', 'STS16', 'STSBenchmark', 'SICKRelatedness']
+        args.tasks += ['MR', 'CR', 'MPQA', 'SUBJ', 'SST2', 'TREC', 'MRPC']
 
     # Set params for SentEval
-    if args.mode == "dev" or args.mode == "fasttest":
+    if args.mode == 'dev' or args.mode == 'fasttest':
         # Fast mode
-        params = {"task_path": PATH_TO_DATA, "usepytorch": True, "kfold": 5}
-        params["classifier"] = {
-            "nhid": 0,
-            "optim": "rmsprop",
-            "batch_size": 128,
-            "tenacity": 3,
-            "epoch_size": 2,
-        }
-    elif args.mode == "test":
+        params = {'task_path': PATH_TO_DATA, 'usepytorch': True, 'kfold': 5}
+        params['classifier'] = {'nhid': 0, 'optim': 'rmsprop', 'batch_size': 128,
+                                         'tenacity': 3, 'epoch_size': 2}
+    elif args.mode == 'test':
         # Full mode
-        params = {"task_path": PATH_TO_DATA, "usepytorch": True, "kfold": 10}
-        params["classifier"] = {
-            "nhid": 0,
-            "optim": "adam",
-            "batch_size": 64,
-            "tenacity": 5,
-            "epoch_size": 4,
-        }
+        params = {'task_path': PATH_TO_DATA, 'usepytorch': True, 'kfold': 10}
+        params['classifier'] = {'nhid': 0, 'optim': 'adam', 'batch_size': 64,
+                                         'tenacity': 5, 'epoch_size': 4}
     else:
         raise NotImplementedError
 
     # SentEval prepare and batcher
     def prepare(params, samples):
-        return
+            return
 
-    def batcher(params, batch, max_length=None):
-        # Handle rare token encoding issues in the dataset
-        if len(batch) >= 1 and len(batch[0]) >= 1 and isinstance(batch[0][0], bytes):
-            batch = [[word.decode("utf-8") for word in s] for s in batch]
-
-        sentences = [" ".join(s) for s in batch]
-
-        # Tokenization
-        if max_length is not None:
+    def batcher(params, batch):
+            sentences = [' '.join(s) for s in batch]
             batch = tokenizer.batch_encode_plus(
                 sentences,
-                return_tensors="pt",
+                return_tensors='pt',
                 padding=True,
-                max_length=max_length,
-                truncation=True,
             )
-        else:
-            batch = tokenizer.batch_encode_plus(
-                sentences, return_tensors="pt", padding=True,
-            )
+            for k in batch:
+                batch[k] = batch[k].to(device)
+            with torch.no_grad():
+                outputs = model(**batch, output_hidden_states=True, return_dict=True, sent_emb=True)
 
-        # Move to the correct device
-        for k in batch:
-            batch[k] = batch[k].to(device)
-
-        # Get raw embeddings
-        with torch.no_grad():
-            outputs = model(**batch, output_hidden_states=True, return_dict=True)
-            last_hidden = outputs.last_hidden_state
-            pooler_output = outputs.pooler_output
-            hidden_states = outputs.hidden_states
-
-        # Apply different poolers
-        if args.pooler == "cls":
-            # There is a linear+activation layer after CLS representation
+                pooler_output = outputs.pooler_output
             return pooler_output.cpu()
-        elif args.pooler == "cls_before_pooler":
-            output = last_hidden[:, 0]
-            output = mlp(output.cpu())
-            output = F.normalize(output)
-            return output.detach()
-        elif args.pooler == "avg":
-            return (
-                (last_hidden * batch["attention_mask"].unsqueeze(-1)).sum(1)
-                / batch["attention_mask"].sum(-1).unsqueeze(-1)
-            ).cpu()
-        elif args.pooler == "avg_first_last":
-            first_hidden = hidden_states[1]
-            last_hidden = hidden_states[-1]
-            pooled_result = (
-                (first_hidden + last_hidden)
-                / 2.0
-                * batch["attention_mask"].unsqueeze(-1)
-            ).sum(1) / batch["attention_mask"].sum(-1).unsqueeze(-1)
-            return pooled_result.cpu()
-        elif args.pooler == "avg_top2":
-            second_last_hidden = hidden_states[-2]
-            last_hidden = hidden_states[-1]
-            pooled_result = (
-                (last_hidden + second_last_hidden)
-                / 2.0
-                * batch["attention_mask"].unsqueeze(-1)
-            ).sum(1) / batch["attention_mask"].sum(-1).unsqueeze(-1)
-            return pooled_result.cpu()
-        else:
-            raise NotImplementedError
 
     results = {}
 
@@ -243,57 +144,45 @@ def main():
         se = senteval.engine.SE(params, batcher, prepare)
         result = se.eval(task)
         results[task] = result
-
+    
     # Print evaluation results
-    if args.mode == "dev":
+    if args.mode == 'dev':
         print("------ %s ------" % (args.mode))
 
         task_names = []
         scores = []
-        for task in ["STSBenchmark", "SICKRelatedness"]:
+        for task in ['STSBenchmark', 'SICKRelatedness']:
             task_names.append(task)
             if task in results:
-                scores.append("%.2f" % (results[task]["dev"]["spearman"][0] * 100))
+                scores.append("%.2f" % (results[task]['dev']['spearman'][0] * 100))
             else:
                 scores.append("0.00")
         print_table(task_names, scores)
 
         task_names = []
         scores = []
-        for task in ["MR", "CR", "SUBJ", "MPQA", "SST2", "TREC", "MRPC"]:
+        for task in ['MR', 'CR', 'SUBJ', 'MPQA', 'SST2', 'TREC', 'MRPC']:
             task_names.append(task)
             if task in results:
-                scores.append("%.2f" % (results[task]["devacc"]))
+                scores.append("%.2f" % (results[task]['devacc']))    
             else:
                 scores.append("0.00")
         task_names.append("Avg.")
         scores.append("%.2f" % (sum([float(score) for score in scores]) / len(scores)))
         print_table(task_names, scores)
 
-    elif args.mode == "test" or args.mode == "fasttest":
+    elif args.mode == 'test' or args.mode == 'fasttest':
         print("------ %s ------" % (args.mode))
 
         task_names = []
         scores = []
-        for task in [
-            "STS12",
-            "STS13",
-            "STS14",
-            "STS15",
-            "STS16",
-            "STSBenchmark",
-            "SICKRelatedness",
-        ]:
+        for task in ['STS12', 'STS13', 'STS14', 'STS15', 'STS16', 'STSBenchmark', 'SICKRelatedness']:
             task_names.append(task)
             if task in results:
-                if task in ["STS12", "STS13", "STS14", "STS15", "STS16"]:
-                    scores.append(
-                        "%.2f" % (results[task]["all"]["spearman"]["all"] * 100)
-                    )
+                if task in ['STS12', 'STS13', 'STS14', 'STS15', 'STS16']:
+                    scores.append("%.2f" % (results[task]['all']['spearman']['all'] * 100))
                 else:
-                    scores.append(
-                        "%.2f" % (results[task]["test"]["spearman"].correlation * 100)
-                    )
+                    scores.append("%.2f" % (results[task]['test']['spearman'].correlation * 100))
             else:
                 scores.append("0.00")
         task_names.append("Avg.")
@@ -302,10 +191,10 @@ def main():
 
         task_names = []
         scores = []
-        for task in ["MR", "CR", "SUBJ", "MPQA", "SST2", "TREC", "MRPC"]:
+        for task in ['MR', 'CR', 'SUBJ', 'MPQA', 'SST2', 'TREC', 'MRPC']:
             task_names.append(task)
             if task in results:
-                scores.append("%.2f" % (results[task]["acc"]))
+                scores.append("%.2f" % (results[task]['acc']))    
             else:
                 scores.append("0.00")
         task_names.append("Avg.")

@@ -1,0 +1,25 @@
+python3 train.py \
+    --model_name_or_path distilbert-base-uncased \
+    --train_file data/nli_for_simcse.csv \
+    --output_dir experiments/sup-barlow/distilroberta-base-e1\
+    --num_train_epochs 3 \
+    --per_device_train_batch_size 128 \
+    --learning_rate 5e-5\
+    --max_seq_length 32 \
+    --evaluation_strategy steps \
+    --metric_for_best_model stsb_spearman \
+    --load_best_model_at_end \
+    --eval_steps 150 \
+    --save_steps 150 \
+    --pooler_type cls \
+    --overwrite_output_dir \
+    --temp 0.05 \
+    --do_train \
+    --augmentation_method dropout \
+    --do_eval \
+    --ssl_type corinfomax \
+    --proj_output_dim 768 \
+    --warmup_steps 1000 \
+    --tensorboard_save_frequency 37\
+    --hidden_dropout_prob 0.1 \
+    "$@"

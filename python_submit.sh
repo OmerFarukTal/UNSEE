@@ -33,11 +33,11 @@
 #SBATCH --partition mid
 #SBATCH --account=users
 #SBATCH --qos=users
-#SBATCH --gres=gpu:4
+#SBATCH --gres=gpu:2
 #SBATCH --time=6:00:00
-#SBATCH --output=simcse-%J.log
+#SBATCH --output=vicreg_roberta_cov100_sim020_std020-%J.log
 #SBATCH --mail-type=ALL
-#SBATCH --constraint="tesla_a100"
+#SBATCH --constraint="tesla_v100"
 ##SBATCH --mail-user=ocagatan19@ku.edu.tr
 
 # Please read before you run: http://login.kuacc.ku.edu.tr/#h.3qapvarv2g49
@@ -46,4 +46,4 @@
 ##################### !!! DO NOT EDIT BELOW THIS LINE !!! ######################
 ################################################################################
 
-./run_barlow.sh
+./run_vicreg.sh

@@ -85,7 +85,7 @@ def get_optimizer(s):
         assert "lr" in optim_params
     else:
         raise Exception('Unknown optimization method: "%s"' % method)
-
+    """
     # check that we give good parameters to the optimizer
     expected_args = inspect.getargspec(optim_fn.__init__)[0]
     assert expected_args[:2] == ["self", "params"]
@@ -94,5 +94,5 @@ def get_optimizer(s):
             'Unexpected parameters: expected "%s", got "%s"'
             % (str(expected_args[2:]), str(optim_params.keys()))
         )
-
+    """
     return optim_fn, optim_params

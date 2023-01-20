@@ -1,4 +1,4 @@
-python3 train.py \
+5python3 train.py \
     --model_name_or_path bert-base-uncased \
     --train_file data/wiki1m_for_simcse.txt \
     --output_dir experiments/unsup-barlow-distilbert-base-uncased-b54 \
