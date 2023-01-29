@@ -54,14 +54,11 @@ from transformers.file_utils import (
     is_torch_available,
     is_torch_tpu_available,
 )
-#from simcse.models import RobertaForCL, BertForCL, BertForCorInfoMax, RobertaForCorInfoMax,BertForVICReg, RobertaForVICReg,BertForBarlow,RobertaForBarlow,DistilBertForBarlow
-from simcse.model.bert_roberta_models import RobertaForCL, BertForCL, BertForCorInfoMax, RobertaForCorInfoMax,BertForVICReg, RobertaForVICReg,BertForBarlow,RobertaForBarlow
-from simcse.model.distilbert_model import DistilBertForCL,DistilBertForCorInfoMax,DistilBertForVICReg,DistilBertForBarlow
-from simcse.model.deberta_model import DebertaForCL, DebertaForCorInfoMax, DebertaForVICReg, DebertaForBarlow
-from simcse.model.convbert_model import ConvbertForCL, ConvbertForCorInfoMax, ConvbertForVICReg, ConvbertForBarlow
-from simcse.model.squeeze_bert_model import SqueezebertForCL, SqueezebertForCorInfoMax, SqueezebertForVICReg, SqueezebertForBarlow
-from simcse.model.electra_model import ElectraForCL, ElectraForCorInfoMax, ElectraForVICReg, ElectraForBarlow
-from simcse.trainers import CLTrainer
+
+from unsee.model.bert_roberta_models import RobertaForCL, BertForCL, BertForCorInfoMax, RobertaForCorInfoMax,BertForVICReg, RobertaForVICReg,BertForBarlow,RobertaForBarlow
+from unsee.model.distilbert_model import DistilBertForCL,DistilBertForCorInfoMax,DistilBertForVICReg,DistilBertForBarlow
+
+from unsee.trainers import CLTrainer
 
 logger = logging.getLogger(__name__)
 MODEL_CONFIG_CLASSES = list(MODEL_FOR_MASKED_LM_MAPPING.keys())
